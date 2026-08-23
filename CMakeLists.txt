@@ -128,10 +128,8 @@ set(CPACK_RPM_COMPONENT_INSTALL ON)
 set(CPACK_DEB_COMPONENT_INSTALL ON)
 set(CPACK_COMPONENTS_ALL      runtime devel)
 
-# Optional Debian-only suffix to differentiate artifacts across suites
-# (e.g. 0.9~bookworm vs 0.9~trixie), avoiding reprepro pool collisions.
-set(ABLS_DEB_VERSION_SUFFIX "" CACHE STRING "Suffix appended to Debian package version")
-set(CPACK_DEBIAN_PACKAGE_VERSION "${PROJECT_VERSION}${ABLS_DEB_VERSION_SUFFIX}")
+# Suite separation is handled by the repository layout, not by a Debian version suffix.
+set(CPACK_DEBIAN_PACKAGE_VERSION "${PROJECT_VERSION}")
 
 # Do not claim ownership of system sudoers directories in RPM.
 set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION "/etc;/etc/sudoers.d")
