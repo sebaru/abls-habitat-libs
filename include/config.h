@@ -44,6 +44,7 @@
 
  extern void Config_add_parameter ( const gchar *name, const gchar *arg_description, const gchar *description, ABLS_CONFIG_PARAMETER_TYPE type );
  extern void Config_apply_FILE  ( JsonNode *target, const gchar *filename );
+ extern void Config_apply_FILE_if_missing ( JsonNode *target, const gchar *filename );
  extern void Config_apply_ENV   ( JsonNode *target );
  extern void Config_apply_ARGV  ( JsonNode *target, gint argc, gchar **argv );
 

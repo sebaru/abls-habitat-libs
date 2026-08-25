@@ -3,12 +3,26 @@
 set -euo pipefail
 
 PACKAGE_ONLY=false
-NO_SIGN=false
 CLEAN=false
-TARGET_DIST="bookworm"
+TARGET_DIST=""
 TARGET_ARCH=""
-DEB_VERSION_SUFFIX=""
-USE_DIST_SUFFIX=true
+
+detect_host_dist() {
+  local codename=""
+
+  if [[ -r /etc/os-release ]]; then
+    # shellcheck disable=SC1091
+    . /etc/os-release
+    codename="${VERSION_CODENAME:-${DEBIAN_CODENAME:-}}"
+  fi
+
+  if [[ -n "$codename" ]]; then
+    printf '%s\n' "$codename"
+    return 0
+  fi
+
+  printf '%s\n' "bookworm"
+}
 
 usage() {
   cat <<'EOF'
@@ -16,18 +30,15 @@ Usage: ./build_apt.sh [options]
 
 Options:
   --package-only, -p   Skip compilation and only run cpack
-  --no-sign            Skip package signing
   --clean              Remove old .deb artifacts before build
-  --dist <suite>       Target suite label for output path (default: bookworm)
-  --arch <arch>        Target Debian arch (default: host arch)
-  --version-suffix <s> Debian version suffix override (example: ~trixie)
-  --no-dist-suffix     Disable automatic ~<dist> suffix
+  --dist <suite>       Target suite label for output path (default: host OS codename)
   -h, --help           Show this help
 
 Notes:
-- This script uses native build toolchain by default.
-- --dist is used for output path and default Debian version suffix (~<dist>).
-- To sign packages, export DEB_SIGNER_ID and install dpkg-sig.
+- This script builds only the native host architecture.
+- By default, suite is inferred from /etc/os-release (VERSION_CODENAME/DEBIAN_CODENAME).
+- --dist is used for output path only; no version suffix is appended by default.
+- Package signing is centralized in ABLS-PKGS.
 EOF
 }
 
@@ -35,10 +46,6 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --package-only|-p)
       PACKAGE_ONLY=true
-      shift
-      ;;
-    --no-sign)
-      NO_SIGN=true
       shift
       ;;
     --clean)
@@ -49,20 +56,6 @@ while [[ $# -gt 0 ]]; do
       TARGET_DIST="${2:-}"
       [[ -n "$TARGET_DIST" ]] || { echo "Missing value for --dist"; exit 2; }
       shift 2
-      ;;
-    --arch)
-      TARGET_ARCH="${2:-}"
-      [[ -n "$TARGET_ARCH" ]] || { echo "Missing value for --arch"; exit 2; }
-      shift 2
-      ;;
-    --version-suffix)
-      DEB_VERSION_SUFFIX="${2:-}"
-      [[ -n "$DEB_VERSION_SUFFIX" ]] || { echo "Missing value for --version-suffix"; exit 2; }
-      shift 2
-      ;;
-    --no-dist-suffix)
-      USE_DIST_SUFFIX=false
-      shift
       ;;
     -h|--help)
       usage
@@ -78,30 +71,33 @@ done
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_DIR="$PROJECT_DIR/build"
 
-if [[ -z "$TARGET_ARCH" ]]; then
-  if command -v dpkg >/dev/null 2>&1; then
-    TARGET_ARCH="$(dpkg --print-architecture)"
-  else
-    echo "Error: dpkg not found. Install Debian packaging tools first."
-    exit 1
-  fi
+if ! command -v dpkg >/dev/null 2>&1; then
+  echo "Error: dpkg not found. Install Debian packaging tools first."
+  exit 1
 fi
 
-ARTIFACT_DIR="$BUILD_DIR/deb/$TARGET_DIST/$TARGET_ARCH"
+TARGET_ARCH="$(dpkg --print-architecture)"
 
-if [[ -z "$DEB_VERSION_SUFFIX" && "$USE_DIST_SUFFIX" == "true" ]]; then
-  DEB_VERSION_SUFFIX="~$TARGET_DIST"
+if [[ -z "$TARGET_DIST" ]]; then
+  TARGET_DIST="$(detect_host_dist)"
 fi
+
+BUILD_DIR="$PROJECT_DIR/build/$TARGET_DIST/$TARGET_ARCH"
+ARTIFACT_DIR="$PROJECT_DIR/build/pkgs/deb/$TARGET_DIST/$TARGET_ARCH"
+
+cmake_args=(
+  -DCMAKE_INSTALL_PREFIX=/usr
+  -DCPACK_DEBIAN_PACKAGE_ARCHITECTURE="$TARGET_ARCH"
+)
 
 echo "Building DEB packages for abls-libs..."
 echo "Project directory: $PROJECT_DIR"
 echo "Build directory:   $BUILD_DIR"
 echo "Output directory:  $ARTIFACT_DIR"
 echo "Package-only mode: $PACKAGE_ONLY"
-echo "Signing mode:      $([[ "$NO_SIGN" == "true" ]] && echo disabled || echo enabled)"
+echo "Signing mode:      disabled (centralized in ABLS-PKGS)"
 echo "Target suite:      $TARGET_DIST"
 echo "Target arch:       $TARGET_ARCH"
-echo "Version suffix:    ${DEB_VERSION_SUFFIX:-<none>}"
 
 mkdir -p "$BUILD_DIR"
 mkdir -p "$ARTIFACT_DIR"
@@ -111,10 +107,7 @@ if [[ "$CLEAN" == "true" ]]; then
   rm -f "$ARTIFACT_DIR"/abls-libs_*_*.deb "$ARTIFACT_DIR"/abls-libs-dev_*_*.deb
 fi
 
-cmake -S "$PROJECT_DIR" -B "$BUILD_DIR" \
-  -DCMAKE_INSTALL_PREFIX=/usr \
-  -DCPACK_DEBIAN_PACKAGE_ARCHITECTURE="$TARGET_ARCH" \
-  -DABLS_DEB_VERSION_SUFFIX="$DEB_VERSION_SUFFIX"
+cmake -S "$PROJECT_DIR" -B "$BUILD_DIR" "${cmake_args[@]}"
 
 if [[ "$PACKAGE_ONLY" == "false" ]]; then
   cmake --build "$BUILD_DIR" -- -j"$(nproc)"
@@ -158,19 +151,6 @@ done < <(find "$BUILD_DIR" -maxdepth 1 -type f -name '*.deb' -printf '%T@ %p\n' 
 if [[ -z "$runtime_deb" || -z "$devel_deb" ]]; then
   echo "DEB generation failed: expected runtime and dev packages in $BUILD_DIR"
   exit 1
-fi
-
-if [[ "$NO_SIGN" == "false" ]]; then
-  if command -v dpkg-sig >/dev/null 2>&1; then
-    if [[ -z "${DEB_SIGNER_ID:-}" ]]; then
-      echo "Error: DEB_SIGNER_ID is required for signing"
-      exit 1
-    fi
-    dpkg-sig --sign builder -k "$DEB_SIGNER_ID" "$runtime_deb" "$devel_deb"
-  else
-    echo "Error: dpkg-sig command not found but signing is enabled"
-    exit 1
-  fi
 fi
 
 copy_with_normalized_name() {

@@ -358,6 +358,8 @@ Artifacts are copied to:
 
 - `build/deb/<suite>/<arch>/`
 
+`build_apt.sh` builds only the native host architecture.
+
 ## Install depuis GitHub Release
 
 ```sh

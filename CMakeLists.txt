@@ -128,10 +128,8 @@ set(CPACK_RPM_COMPONENT_INSTALL ON)
 set(CPACK_DEB_COMPONENT_INSTALL ON)
 set(CPACK_COMPONENTS_ALL      runtime devel)
 
-# Optional Debian-only suffix to differentiate artifacts across suites
-# (e.g. 0.9~bookworm vs 0.9~trixie), avoiding reprepro pool collisions.
-set(ABLS_DEB_VERSION_SUFFIX "" CACHE STRING "Suffix appended to Debian package version")
-set(CPACK_DEBIAN_PACKAGE_VERSION "${PROJECT_VERSION}${ABLS_DEB_VERSION_SUFFIX}")
+# Suite separation is handled by the repository layout, not by a Debian version suffix.
+set(CPACK_DEBIAN_PACKAGE_VERSION "${PROJECT_VERSION}")
 
 # Do not claim ownership of system sudoers directories in RPM.
 set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION "/etc;/etc/sudoers.d")
@@ -153,8 +151,9 @@ set(CPACK_RPM_DEVEL_PACKAGE_REQUIRES "abls-libs = ${PROJECT_VERSION}, glib2-deve
 set(CPACK_RPM_DEVEL_FILE_NAME "RPM-DEFAULT")
 
 # Package runtime (DEB)
+set(ABLS_DEBIAN_GLIB_RUNTIME_DEPEND "libglib2.0-0t64 | libglib2.0-0")
 set(CPACK_DEBIAN_RUNTIME_PACKAGE_NAME "abls-libs")
-set(CPACK_DEBIAN_RUNTIME_PACKAGE_DEPENDS "libglib2.0-0, libjson-glib-1.0-0, libmosquitto1")
+set(CPACK_DEBIAN_RUNTIME_PACKAGE_DEPENDS "${ABLS_DEBIAN_GLIB_RUNTIME_DEPEND}, libjson-glib-1.0-0, libmosquitto1")
 set(CPACK_DEBIAN_RUNTIME_PACKAGE_SHLIBDEPS ON)
 
 # Package devel (DEB)

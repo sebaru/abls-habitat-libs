@@ -140,6 +140,28 @@
      } else Info ( __func__, FACILITY_CONFIG, NULL, LOG_WARNING, "Unable to read file config '%s'", filename );
   }
 /******************************************************************************************************************************/
+/* Config_apply_FILE_if_missing: Charge configuration depuis fichier JSON si les clés sont manquantes                         */
+/* Entrée: target (JsonNode a remplir), filename (chemin du fichier)                                                          */
+/* Sortie: néant                                                                                                              */
+/******************************************************************************************************************************/
+ void Config_apply_FILE_if_missing ( JsonNode *target, const gchar *filename )
+  { const gchar *name;
+    JsonObjectIter iter;
+    JsonNode *ObjectMemberNode;
+
+    if (!target || !filename) return;
+
+    Info ( __func__, FACILITY_CONFIG, NULL, LOG_INFO, "Trying to read config file '%s'", filename );
+    JsonNode *from_file = Json_read_from_file ( (gchar *)filename );
+    if (from_file)                                                              /* Copy des elements de from_file vers target */
+     { JsonObject *fromFileObject = json_node_get_object(from_file);                        /* Récupération de l'objet source */
+       json_object_iter_init(&iter, fromFileObject);
+       while (json_object_iter_next(&iter, &name, &ObjectMemberNode))
+        { if (!Json_has_member(target, name)) Json_copy_member_into ( from_file, name, target ); }
+       Json_unref( from_file );
+     } else Info ( __func__, FACILITY_CONFIG, NULL, LOG_WARNING, "Unable to read file config '%s'", filename );
+  }
+/******************************************************************************************************************************/
 /* Config_apply_ENV: Applique variables d'environnement ABLS_* dans le JSON target                                           */
 /* Entrée: target (JsonNode a remplir)                                                                                        */
 /* Sortie: néant                                                                                                              */

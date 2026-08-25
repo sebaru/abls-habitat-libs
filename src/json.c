@@ -410,7 +410,7 @@
 /* Entrée: le RootNode, le nom du parametre                                                                                   */
 /* Sortie: TRUE si le membre existe, FALSE sinon                                                                              */
 /******************************************************************************************************************************/
- gboolean Json_has_member ( JsonNode *RootNode, gchar *chaine )
+ gboolean Json_has_member ( JsonNode *RootNode, const gchar *chaine )
   { if (!RootNode)
      { Info ( __func__, "json", NULL, LOG_ERR, "RootNode is null for '%s'", chaine );  return(FALSE); }
     JsonObject *object = json_node_get_object (RootNode);
