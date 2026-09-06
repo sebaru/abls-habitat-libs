@@ -92,6 +92,19 @@
     return(TRUE);
   }
 /******************************************************************************************************************************/
+/* Mqtt_get_topic_lvl: Recupere le niveau demande du topic mqtt_topic_lvlX d'un JsonNode                                      */
+/* Entrées: request, le niveau demande                                                                                        */
+/* Sortie : la chaine correspondante, ou NULL si absente                                                                      */
+/******************************************************************************************************************************/
+ const gchar *Mqtt_get_topic_lvl ( JsonNode *request, gint level )
+  { gchar name[32];
+
+    if (!request || level < 0) return(NULL);
+
+    g_snprintf ( name, sizeof(name), "mqtt_topic_lvl%d", level );
+    return( Json_get_string ( request, name ) );
+  }
+/******************************************************************************************************************************/
 /* Mqtt_last_will: Configure le Last Will MQTT via un topic formate en variadique                                             */
 /* Entrées: client MQTT, payload du will (chaine C terminee par NUL), format/topic variadique                                 */
 /* Sortie : Néant                                                                                                             */
