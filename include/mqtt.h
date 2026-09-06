@@ -64,6 +64,8 @@
  extern void Mqtt_unsubscribe ( struct ABLS_MQTT *mqtt, gchar *format, ... );
  /* Mqtt_topic_is: compare mqtt_topic_lvlX a une liste de niveaux; un niveau attendu NULL est ignore */
  extern gboolean Mqtt_topic_is ( JsonNode *request, gint level_count, ... );
+ /* Mqtt_get_topic_lvl: renvoie la valeur du niveau mqtt_topic_lvlX demande, ou NULL si absente */
+ extern const gchar *Mqtt_get_topic_lvl ( JsonNode *request, gint level );
  extern void Mqtt_send_message     ( struct ABLS_MQTT *mqtt, JsonNode *node, gboolean retain, gchar *topic, ... );
  extern JsonNode *Mqtt_get_message ( struct ABLS_MQTT *mqtt );
 
