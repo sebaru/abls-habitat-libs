@@ -15,5 +15,10 @@
 %abls ALL=(ALL) NOPASSWD: /usr/bin/systemctl ^enable abls-[A-Za-z0-9@.-]+$
 %abls ALL=(ALL) NOPASSWD: /usr/bin/systemctl ^disable abls-[A-Za-z0-9@.-]+$
 
+%abls ALL=(ALL) NOPASSWD: /usr/bin/systemctl --user ^stop abls-[A-Za-z0-9@.-]+$
+%abls ALL=(ALL) NOPASSWD: /usr/bin/systemctl --user ^start abls-[A-Za-z0-9@.-]+$
+%abls ALL=(ALL) NOPASSWD: /usr/bin/systemctl --user ^restart abls-[A-Za-z0-9@.-]+$
+%abls ALL=(ALL) NOPASSWD: /usr/bin/systemctl --user ^enable abls-[A-Za-z0-9@.-]+$
+%abls ALL=(ALL) NOPASSWD: /usr/bin/systemctl --user ^disable abls-[A-Za-z0-9@.-]+$
 
 Defaults:%abls !requiretty
