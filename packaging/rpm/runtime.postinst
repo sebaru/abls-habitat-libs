@@ -5,6 +5,11 @@ if ! getent group abls >/dev/null 2>&1; then
   groupadd --system abls || true
 fi
 
+# Creation du repertoire /etc/abls
+mkdir -p /etc/abls
+chown root:abls /etc/abls
+chmod 0770 /etc/abls
+
 /sbin/ldconfig
 
 exit 0
