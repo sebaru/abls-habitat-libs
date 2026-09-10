@@ -319,6 +319,13 @@
  gchar *Json_to_string ( JsonNode *RootNode )
   { return ( json_to_string ( RootNode, FALSE ) ); }
 /******************************************************************************************************************************/
+/* Json_to_pretty_string: transforme un JsonNode en string avec une mise en forme lisible                                     */
+/* Entrée: le JsonNode a convertir                                                                                            */
+/* Sortie: un nouveau buffer                                                                                                  */
+/******************************************************************************************************************************/
+ gchar *Json_to_pretty_string ( JsonNode *RootNode )
+  { return ( json_to_string ( RootNode, TRUE ) ); }
+/******************************************************************************************************************************/
 /* Json_get_from_string: Recupere l'object de plus haut niveau dans une chaine JSON                                           */
 /* Entrée: la chaine de caractere                                                                                             */
 /* Sortie: l'objet                                                                                                            */
@@ -463,7 +470,7 @@ end:
        return(FALSE);
      }
 
-    gchar *buf = Json_to_string ( RootNode );
+    gchar *buf = Json_to_pretty_string ( RootNode );
     if (!buf)
      { close(fd);
        Info ( __func__, FACILITY_JSON, NULL, LOG_ERR, "Json to Buf failed, writing to '%s'", filename );

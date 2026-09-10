@@ -60,6 +60,7 @@
 
 /*-- Conversion string / parsing ---------------------------------------------------------------------------------------------*/
  extern gchar     *Json_to_string               ( JsonNode *RootNode );
+ extern gchar     *Json_to_pretty_string        ( JsonNode *RootNode );
  extern JsonNode  *Json_get_from_string         ( const gchar *chaine );
 
 /*-- Extraction de valeurs ---------------------------------------------------------------------------------------------------*/
