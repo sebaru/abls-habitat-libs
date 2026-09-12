@@ -72,6 +72,7 @@
  extern JsonObject *Json_get_object_as_object   ( JsonNode *RootNode, gchar *chaine );
  extern JsonNode  *Json_get_object_as_node      ( JsonNode *RootNode, gchar *chaine );
  extern gboolean   Json_has_member              ( JsonNode *RootNode, const gchar *chaine );
+ extern gboolean   Json_has_mandatory_member    ( JsonNode *RootNode, const gchar *chaine );
  extern guint      Json_array_get_length        ( JsonNode *RootNode, gchar *array_name );
  extern JsonNode  *Json_array_get_element_at    ( JsonNode *RootNode, gchar *array_name, guint index );
 

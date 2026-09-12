@@ -415,14 +415,28 @@
 /******************************************************************************************************************************/
 /* Json_has_member: Verifie si un membre existe dans l'objet JSON                                                             */
 /* Entrée: le RootNode, le nom du parametre                                                                                   */
-/* Sortie: TRUE si le membre existe, FALSE sinon                                                                              */
+/* Sortie: TRUE si le membre existe, FALSE sinon. Aucun log n'est mis à jour sauf si RootNode ou Object est NULL              */
 /******************************************************************************************************************************/
  gboolean Json_has_member ( JsonNode *RootNode, const gchar *chaine )
   { if (!RootNode)
      { Info ( __func__, "json", NULL, LOG_ERR, "RootNode is null for '%s'", chaine );  return(FALSE); }
     JsonObject *object = json_node_get_object (RootNode);
-    if (!object)
-     { Info ( __func__, "json", NULL, LOG_ERR, "Object is null for '%s'", chaine );  return(FALSE); }
+
+    if (!object)                                        return(FALSE);
+    if (!json_object_has_member ( object, chaine ))     return(FALSE);
+    if (json_object_get_null_member ( object, chaine )) return(FALSE);
+    return( TRUE );
+  }
+/******************************************************************************************************************************/
+/* Json_has_mandatory_member: Verifie si un membre obligatoire existe dans l'objet JSON                                       */
+/* Entrée: le RootNode, le nom du parametre                                                                                   */
+/* Sortie: TRUE si le membre existe, FALSE sinon, les logs sont mis à jour                                                    */
+/******************************************************************************************************************************/
+ gboolean Json_has_mandatory_member ( JsonNode *RootNode, const gchar *chaine )
+  { if (!RootNode)
+     { Info ( __func__, "json", NULL, LOG_ERR, "RootNode is null for '%s'", chaine );  return(FALSE); }
+    JsonObject *object = json_node_get_object (RootNode);
+    if (!object) { Info ( __func__, "json", NULL, LOG_ERR, "Object is null for '%s'", chaine );  return(FALSE); }
     if (!json_object_has_member ( object, chaine ))
      { Info ( __func__, "json", NULL, LOG_DEBUG, "%s is missing", chaine ); return(FALSE); }
     if (json_object_get_null_member ( object, chaine ))
